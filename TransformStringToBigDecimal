@@ -1,0 +1,102 @@
+//scala
+case class DataString(data:String)
+  case class DataBigDecimal(data:BigDecimal)
+
+  def main(args: Array[String]): Unit = {
+
+    implicit val encoderString = Encoders.product[DataString]
+    implicit val encoderBigDecimal = Encoders.product[DataBigDecimal]
+
+    val spark = SparkSession.builder.appName("app").master("local[*]").getOrCreate
+
+    val df = spark.read.option("header", "true").option("sep", ";").csv("C:\\Users\\bigapps1\\Desktop\\scripts\\allFile\\file1.csv").as[DataString]
+
+    val df2 = df.map(ds => {
+      val bd =  BigDecimal(ds.data)
+      DataBigDecimal(bd)
+    })
+
+    df.show()
+
+    df2.printSchema()
+    df2.show()
+
+  }
+  
+  //java
+  
+  
+  
+   final Encoder<Granulaire> granulaireEncoder = Encoders.bean(Granulaire.class);
+        final Encoder<GranulaireTransom> granulaireEncoder2 = Encoders.bean(GranulaireTransom.class);
+        SparkSession spark = SparkSession.builder()
+                .appName("app")
+                .master("local[*]")
+                .getOrCreate();
+
+        Dataset<Granulaire> df = spark.read()
+                .option("header", "true")
+                .option("sep", ";")
+                .csv("C:\\Users\\bigapps1\\Desktop\\scripts\\allFile\\file1.csv")
+                .as(granulaireEncoder);
+
+
+        df.show();
+
+        Dataset<GranulaireTransom> df2 = df.map((MapFunction<Granulaire, GranulaireTransom>) gra ->
+                     new GranulaireTransom(gra.getData())
+                     ,granulaireEncoder2);
+
+
+        df2.printSchema();
+
+        df2.show();
+    }
+    
+    
+    
+    public class GranulaireTransom implements Serializable {
+    private BigDecimal data;
+
+    public GranulaireTransom(String data1) {
+        this.data = new BigDecimal(data1);
+    }
+
+    public BigDecimal getData() {
+        return data;
+    }
+
+    public void setData(BigDecimal data) {
+        this.data = data;
+    }
+}
+
+public class Granulaire  implements Serializable {
+    private String data;
+    public Granulaire(String data) {
+        this.data = data;
+    }
+
+    public Granulaire() {
+
+    }
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
+    }
+
+
+}
+
+
+
+
+
+    
+    
+    
+  
+  
